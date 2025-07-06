@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Habit Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at center, #1f0036, #000000);
+      color: #fff;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      color: #00ffe7;
+      text-shadow: 0 0 15px #00ffe7;
+      margin-bottom: 20px;
+    }
+    #habitForm {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+    input[type="text"] {
+      padding: 12px;
+      width: 250px;
+      border-radius: 10px;
+      border: none;
+      font-size: 1em;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      backdrop-filter: blur(10px);
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(45deg, #ff00cc, #3333ff);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s ease-in-out;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .habit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    .habit {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+    }
+    .habit-title {
+      font-size: 1.3em;
+      margin-bottom: 15px;
+      color: #00ffe7;
+      text-shadow: 0 0 5px #00ffe7;
+    }
+    .track-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .track-buttons button {
+      padding: 10px;
+      border-radius: 12px;
+      border: 2px solid #888;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-weight: bold;
+      transition: 0.2s;
+      backdrop-filter: blur(5px);
+    }
+    .track-buttons button.active {
+      background-color: #00ff99;
+      color: #000;
+      border-color: #00ff99;
+      box-shadow: 0 0 10px #00ff99;
+    }
+    .progress-bar {
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, #00ffe7, #ff00cc);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    @media(max-width: 500px) {
+      input[type="text"] {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Habit Tracker</h1>
+  <div id="habitForm">
+    <input type="text" id="habitInput" placeholder="Type your beast habit..." />
+    <button onclick="addHabit()">+ Add</button>
+  </div>
+  <div class="habit-list" id="habitList"></div>
+
+  <script>
+    const fullDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const habitList = document.getElementById('habitList');
+    let habits = JSON.parse(localStorage.getItem('crazyHabits') || '[]');
+
+    function saveHabits() {
+      localStorage.setItem('crazyHabits', JSON.stringify(habits));
+    }
+
+    function renderHabits() {
+      habitList.innerHTML = '';
+      habits.forEach((habit, index) => {
+        const habitDiv = document.createElement('div');
+        habitDiv.className = 'habit';
+
+        const title = document.createElement('div');
+        title.className = 'habit-title';
+        title.innerText = habit.name;
+
+        const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'track-buttons';
+
+        for (let i = 0; i < 7; i++) {
+          const btn = document.createElement('button');
+          btn.innerText = fullDays[i];
+          if (habit.track[i]) btn.classList.add('active');
+          btn.onclick = () => {
+            habit.track[i] = !habit.track[i];
+            saveHabits();
+            renderHabits();
+          };
+          buttonGroup.appendChild(btn);
+        }
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+
+        const fill = document.createElement('div');
+        fill.className = 'progress-fill';
+        const percent = (habit.track.filter(Boolean).length / 7) * 100;
+        fill.style.width = percent + '%';
+        progressBar.appendChild(fill);
+
+        habitDiv.appendChild(title);
+        habitDiv.appendChild(buttonGroup);
+        habitDiv.appendChild(progressBar);
+        habitList.appendChild(habitDiv);
+      });
+    }
+
+    function addHabit() {
+      const input = document.getElementById('habitInput');
+      const name = input.value.trim();
+      if (name === '') return alert("Enter a habit name!");
+      habits.push({ name, track: [false, false, false, false, false, false, false] });
+      input.value = '';
+      saveHabits();
+      renderHabits();
+    }
+
+    renderHabits();
+  </script>
+</body>
+</html>
